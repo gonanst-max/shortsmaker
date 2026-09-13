@@ -18,16 +18,17 @@ jobs:
       with:
         node-version: 20
 
-    - name: Setup Java
+    - name: Setup Java JDK
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+    - name: Accept Android SDK Licenses
+      run: |
+        yes | sdkmanager --licenses || true
 
-    - name: Build Android APK
+    - name: Build Android App
       run: |
         mkdir -p www
         cp index.html www/
@@ -35,7 +36,7 @@ jobs:
         npm install @capacitor/core @capacitor/cli @capacitor/android
         npx cap init "ShortsMaker" "com.shorts.maker" --web-dir www
         npx cap add android
-        npx cap copy android
+        npx cap sync android
         cd android
         chmod +x gradlew
         ./gradlew assembleDebug --no-daemon
