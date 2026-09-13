@@ -16,15 +16,18 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: '17'
 
-    - name: Build Web to Android
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Build Android APK
       run: |
         mkdir -p www
         cp index.html www/
@@ -35,7 +38,7 @@ jobs:
         npx cap copy android
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
