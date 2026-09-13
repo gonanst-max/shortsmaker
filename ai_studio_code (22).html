@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Shorts Anti-Copyright Master Studio</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #070b14; color: #f8fafc; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 1150px; width: 100%; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; }
+        @media(max-width: 880px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: #111a2e; padding: 20px; border-radius: 14px; border: 1px solid #1e2e4a; }
+        h2 { font-size: 1.15rem; margin-bottom: 12px; color: #38bdf8; }
+
+        .control-group { margin-bottom: 11px; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #94a3b8; font-weight: 600; }
+        input[type="range"], input[type="text"], input[type="file"], select {
+            width: 100%; padding: 7px; border-radius: 6px; background: #080d1a; border: 1px solid #334155; color: #fff; font-size: 0.85rem;
+        }
+
+        .checkbox-group { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; font-size: 0.82rem; color: #cbd5e1; }
+        .checkbox-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Preview Canvas */
+        .preview-box { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        canvas { 
+            width: 270px; height: 480px; background: #000; border-radius: 12px; 
+            border: 2px solid #38bdf8; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            cursor: crosshair; touch-action: none;
+        }
+        .drag-hint { font-size: 0.75rem; color: #38bdf8; margin-top: 6px; font-weight: 500; }
+
+        button { width: 100%; padding: 11px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; }
+        .btn-play { background: #38bdf8; color: #070b14; }
+        .btn-instant { background: #10b981; color: #fff; font-size: 0.95rem; }
+        button:hover { opacity: 0.9; }
+
+        .progress-container { width: 100%; background: #080d1a; border-radius: 8px; height: 14px; margin-top: 10px; display: none; overflow: hidden; border: 1px solid #334155; }
+        .progress-bar { height: 100%; width: 0%; background: #10b981; transition: width 0.1s; }
+        .status { margin-top: 10px; font-size: 0.82rem; color: #fbbf24; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Controls -->
+    <div class="card">
+        <h2>🛠 Studio Controls & Watermark</h2>
+
+        <!-- Main Video -->
+        <div class="control-group">
+            <label>1. Main Video (Full 9:16 - No Flip):</label>
+            <input type="file" id="mainVideoUpload" accept="video/*">
+        </div>
+
+        <!-- Background Video / Image -->
+        <div class="grid-2">
+            <div class="control-group">
+                <label>2. Background Visual (Video/Img):</label>
+                <input type="file" id="bgVisualUpload" accept="video/*, image/*">
+            </div>
+            <div class="control-group">
+                <label>BG Blend Opacity: <span id="bgOpacityVal">35%</span></label>
+                <input type="range" id="bgOpacity" min="0.1" max="0.9" step="0.05" value="0.35">
+            </div>
+        </div>
+
+        <!-- Custom Watermark Section -->
+        <div style="background: #080d1a; padding: 10px; border-radius: 8px; border: 1px dashed #38bdf8; margin: 10px 0;">
+            <label style="color: #38bdf8; font-size: 0.88rem;">🎯 Custom Watermark (Logo / Handle):</label>
+            <div class="grid-2" style="margin-top: 6px;">
+                <div>
+                    <label>Logo Image (PNG):</label>
+                    <input type="file" id="wmUpload" accept="image/*">
+                </div>
+                <div>
+                    <label>Ya Handle Text:</label>
+                    <input type="text" id="wmText" placeholder="@YourChannel">
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 6px;">
+                <div>
+                    <label>Watermark Size: <span id="wmSizeVal">120px</span></label>
+                    <input type="range" id="wmSize" min="40" max="300" value="120">
+                </div>
+                <div>
+                    <label>Watermark Opacity: <span id="wmOpacityVal">80%</span></label>
+                    <input type="range" id="wmOpacity" min="0.1" max="1" step="0.05" value="0.8">
+                </div>
+            </div>
+        </div>
+
+        <!-- Voiceover & Voice Changer -->
+        <div class="grid-2">
+            <div class="control-group">
+                <label>Voiceover Audio (Optional):</label>
+                <input type="file" id="voiceUpload" accept="audio/*">
+            </div>
+            <div class="control-group">
+                <label>🎙 Voice Changer FX:</label>
+                <select id="voiceEffect">
+                    <option value="none">Normal (Original Voice)</option>
+                    <option value="deep">🦍 Deep Heavy Bass</option>
+                    <option value="radio">📻 Walkie-Talkie Radio</option>
+                    <option value="echo">🌌 Studio Echo / Reverb</option>
+                    <option value="robot">🤖 Cyber Robot</option>
+                    <option value="high">🐿 Sharp High Pitch</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 10 FX -->
+        <div class="control-group">
+            <label>Procedural Overlay FX:</label>
+            <select id="fxSelect">
+                <option value="rain">🌧 1. Rain Storm (Baarish)</option>
+                <option value="snow">❄ 2. Snowfall (Baraf)</option>
+                <option value="sparks">🔥 3. Fire Sparks (Angaaray)</option>
+                <option value="bokeh">✨ 4. Magic Bokeh / Glow Dust</option>
+                <option value="glitch">⚡ 5. Cyberpunk Glitch</option>
+                <option value="matrix">🟢 6. Matrix Code Rain</option>
+                <option value="film">🎞 7. Retro Film Grain & Scratch</option>
+                <option value="stars">🌌 8. Hyper Stars Warp</option>
+                <option value="hearts">💖 9. Floating Viral Hearts</option>
+                <option value="fog">💨 10. Smoke & Fog Waves</option>
+            </select>
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="dynamicDrift" checked> 🌊 Dynamic Breathing Micro-Drift</label>
+            <label><input type="checkbox" id="bottomProgress" checked> 🔴 Animated Bottom Progress Bar</label>
+            <label><input type="checkbox" id="vignette" checked> 🌑 Top/Bottom Dark Shadows</label>
+            <label><input type="checkbox" id="muteOriginal"> 🔇 Mute Original Video Audio</label>
+        </div>
+
+        <div class="control-group">
+            <label>Top Hook Text:</label>
+            <input type="text" id="topText" placeholder="Wait for the twist! 😱">
+        </div>
+
+        <button class="btn-play" id="btnPlay">▶ Preview Play / Pause</button>
+        <button class="btn-instant" id="btnExport">⚡ 1-Click Export & Auto-Download</button>
+
+        <div class="progress-container" id="progressBox">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status" id="status">Pehle main video upload karein.</div>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="card preview-box">
+        <h2>📱 Live Canvas (720x1280)</h2>
+        <canvas id="canvas" width="720" height="1280"></canvas>
+        <div class="drag-hint">👆 Watermark ko mouse se pakar kar jidhar marzi drag karein!</div>
+
+        <!-- Hidden Elements -->
+        <video id="mainVideo" style="display:none;" playsinline></video>
+        <video id="bgVideo" style="display:none;" loop playsinline muted></video>
+        <audio id="voiceAudio" style="display:none;"></audio>
+    </div>
+</div>
+
+<script>
+    const mainVideoUpload = document.getElementById('mainVideoUpload');
+    const bgVisualUpload = document.getElementById('bgVisualUpload');
+    const voiceUpload = document.getElementById('voiceUpload');
+    const wmUpload = document.getElementById('wmUpload');
+    const wmText = document.getElementById('wmText');
+
+    const mainVideo = document.getElementById('mainVideo');
+    const bgVideo = document.getElementById('bgVideo');
+    const voiceAudio = document.getElementById('voiceAudio');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const bgOpacity = document.getElementById('bgOpacity');
+    const bgOpacityVal = document.getElementById('bgOpacityVal');
+    const wmSize = document.getElementById('wmSize');
+    const wmSizeVal = document.getElementById('wmSizeVal');
+    const wmOpacity = document.getElementById('wmOpacity');
+    const wmOpacityVal = document.getElementById('wmOpacityVal');
+
+    const voiceEffect = document.getElementById('voiceEffect');
+    const fxSelect = document.getElementById('fxSelect');
+    const dynamicDrift = document.getElementById('dynamicDrift');
+    const bottomProgress = document.getElementById('bottomProgress');
+    const vignette = document.getElementById('vignette');
+    const muteOriginal = document.getElementById('muteOriginal');
+    const topText = document.getElementById('topText');
+
+    const btnPlay = document.getElementById('btnPlay');
+    const btnExport = document.getElementById('btnExport');
+    const progressBox = document.getElementById('progressBox');
+    const progressBar = document.getElementById('progressBar');
+    const status = document.getElementById('status');
+
+    let bgImage = null;
+    let wmImage = null;
+    let isRecording = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let timeTick = 0;
+
+    // Watermark Position (Default Bottom-Right)
+    let wmPos = { x: 540, y: 1120 };
+    let isDraggingWM = false;
+
+    // Web Audio Cache
+    let audioCtx = null;
+    let mainVideoSource = null;
+    let voiceAudioSource = null;
+
+    bgOpacity.addEventListener('input', () => bgOpacityVal.innerText = Math.round(bgOpacity.value * 100) + "%");
+    wmSize.addEventListener('input', () => wmSizeVal.innerText = wmSize.value + "px");
+    wmOpacity.addEventListener('input', () => wmOpacityVal.innerText = Math.round(wmOpacity.value * 100) + "%");
+
+    // Upload Handlers
+    mainVideoUpload.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            mainVideo.src = URL.createObjectURL(e.target.files[0]);
+            mainVideo.playbackRate = 1.04;
+            mainVideo.onloadedmetadata = () => status.innerText = `Video Loaded (${Math.round(mainVideo.duration)}s).`;
+        }
+    });
+
+    bgVisualUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.type.startsWith('video')) {
+            bgImage = null;
+            bgVideo.src = URL.createObjectURL(file);
+            bgVideo.play();
+        } else if (file.type.startsWith('image')) {
+            bgVideo.src = "";
+            bgImage = new Image();
+            bgImage.src = URL.createObjectURL(file);
+        }
+        status.innerText = "Background visual attach ho gaya!";
+    });
+
+    wmUpload.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            wmImage = new Image();
+            wmImage.src = URL.createObjectURL(e.target.files[0]);
+            status.innerText = "Watermark logo attach ho gaya! Screen par drag karein.";
+        }
+    });
+
+    voiceUpload.addEventListener('change', (e) => {
+        if (e.target.files[0]) voiceAudio.src = URL.createObjectURL(e.target.files[0]);
+    });
+
+    // ==========================================
+    // 🖱 DRAG AND DROP WATERMARK ON CANVAS
+    // ==========================================
+    function updateWatermarkCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        // Canvas Internal coordinate math (720x1280)
+        wmPos.x = (clientX - rect.left) * (canvas.width / rect.width);
+        wmPos.y = (clientY - rect.top) * (canvas.height / rect.height);
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDraggingWM = true; updateWatermarkCoords(e); });
+    window.addEventListener('mousemove', (e) => { if (isDraggingWM) updateWatermarkCoords(e); });
+    window.addEventListener('mouseup', () => { isDraggingWM = false; });
+
+    // Touch support for Mobile
+    canvas.addEventListener('touchstart', (e) => { isDraggingWM = true; updateWatermarkCoords(e); });
+    window.addEventListener('touchmove', (e) => { if (isDraggingWM) updateWatermarkCoords(e); });
+    window.addEventListener('touchend', () => { isDraggingWM = false; });
+
+    // 10 Procedural Particle FX
+    const particles = [];
+    for (let i = 0; i < 70; i++) {
+        particles.push({
+            x: Math.random() * 720,
+            y: Math.random() * 1280,
+            speed: Math.random() * 5 + 2,
+            size: Math.random() * 4 + 1,
+            drift: Math.random() * 2 - 1,
+            char: String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))
+        });
+    }
+
+    function drawCustomFX(fx) {
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+
+        if (fx === 'rain') {
+            ctx.strokeStyle = "rgba(180, 220, 255, 0.75)";
+            ctx.lineWidth = 2;
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x + p.drift * 2, p.y + p.speed * 4 + 12);
+                ctx.stroke();
+                p.y += p.speed * 4 + 12;
+                p.x += p.drift * 2;
+                if (p.y > 1280) { p.y = -20; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'snow') {
+            ctx.fillStyle = "#ffffff";
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size + 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                p.y += p.speed * 0.8 + 1;
+                p.x += Math.sin(p.y * 0.02) * 1.5;
+                if (p.y > 1280) { p.y = -10; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'sparks') {
+            particles.forEach(p => {
+                ctx.fillStyle = `hsl(${Math.random() * 30 + 15}, 100%, 60%)`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                p.y -= p.speed * 1.5 + 2;
+                p.x += Math.sin(timeTick + p.y) * 2;
+                if (p.y < -10) { p.y = 1290; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'bokeh') {
+            ctx.globalCompositeOperation = 'screen';
+            particles.forEach(p => {
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 6);
+                grad.addColorStop(0, "rgba(255, 215, 0, 0.8)");
+                grad.addColorStop(1, "rgba(255, 215, 0, 0)");
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * 6, 0, Math.PI * 2);
+                ctx.fill();
+                p.y -= p.speed * 0.5;
+                if (p.y < -30) { p.y = 1300; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'glitch') {
+            ctx.fillStyle = "rgba(56, 189, 248, 0.25)";
+            for (let i = 0; i < 5; i++) ctx.fillRect(0, Math.random() * 1280, 720, Math.random() * 14 + 2);
+        } 
+        else if (fx === 'matrix') {
+            ctx.fillStyle = "#22c55e";
+            ctx.font = "bold 20px monospace";
+            particles.forEach(p => {
+                ctx.fillText(p.char, p.x, p.y);
+                p.y += p.speed * 2.5 + 4;
+                if (p.y > 1280) { p.y = -20; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'film') {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+            for (let i = 0; i < 350; i++) ctx.fillRect(Math.random() * 720, Math.random() * 1280, 2, 2);
+        } 
+        else if (fx === 'stars') {
+            ctx.fillStyle = "#ffffff";
+            particles.forEach(p => {
+                let dx = (p.x - 360) * 0.05, dy = (p.y - 640) * 0.05;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                p.x += dx * p.speed * 0.8;
+                p.y += dy * p.speed * 0.8;
+                if (p.x < 0 || p.x > 720 || p.y < 0 || p.y > 1280) {
+                    p.x = 360 + (Math.random() * 60 - 30);
+                    p.y = 640 + (Math.random() * 60 - 30);
+                }
+            });
+        } 
+        else if (fx === 'hearts') {
+            ctx.font = "28px sans-serif";
+            particles.slice(0, 22).forEach(p => {
+                ctx.fillText("💖", p.x, p.y);
+                p.y -= p.speed * 0.9 + 1;
+                if (p.y < -20) { p.y = 1300; p.x = Math.random() * 720; }
+            });
+        } 
+        else if (fx === 'fog') {
+            ctx.globalCompositeOperation = 'screen';
+            for (let i = 0; i < 3; i++) {
+                const grad = ctx.createRadialGradient(360 + Math.sin(timeTick + i) * 140, 350 + i * 300, 40, 360, 350 + i * 300, 380);
+                grad.addColorStop(0, "rgba(255, 255, 255, 0.2)");
+                grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 720, 1280);
+            }
+        }
+        ctx.restore();
+    }
+
+    // Canvas Rendering Loop
+    function render() {
+        timeTick += 0.04;
+
+        if (mainVideo.src && !mainVideo.paused && !mainVideo.ended) {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Dynamic Drift
+            let scale = 1.03;
+            let driftX = 0, driftY = 0;
+            if (dynamicDrift.checked) {
+                scale = 1.04 + Math.sin(timeTick * 0.5) * 0.02;
+                driftX = Math.sin(timeTick * 0.4) * 8;
+                driftY = Math.cos(timeTick * 0.3) * 6;
+            }
+
+            // Draw Main Video (Full 9:16)
+            ctx.translate(canvas.width / 2 + driftX, canvas.height / 2 + driftY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(mainVideo, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+            ctx.restore();
+
+            // 2. Draw Background Visual
+            if (bgVideo.src && !bgVideo.paused && !bgVideo.ended) {
+                ctx.save();
+                ctx.globalAlpha = parseFloat(bgOpacity.value);
+                ctx.globalCompositeOperation = 'screen';
+                ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            } else if (bgImage) {
+                ctx.save();
+                ctx.globalAlpha = parseFloat(bgOpacity.value);
+                ctx.globalCompositeOperation = 'screen';
+                ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
+
+            // 3. Draw FX
+            drawCustomFX(fxSelect.value);
+
+            // 4. Vignette
+            if (vignette.checked) {
+                ctx.save();
+                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                grad.addColorStop(0, "rgba(0,0,0,0.65)");
+                grad.addColorStop(0.15, "rgba(0,0,0,0)");
+                grad.addColorStop(0.85, "rgba(0,0,0,0)");
+                grad.addColorStop(1, "rgba(0,0,0,0.75)");
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
+
+            // 5. Progress Bar
+            if (bottomProgress.checked && mainVideo.duration) {
+                ctx.save();
+                const prog = (mainVideo.currentTime / mainVideo.duration) * canvas.width;
+                ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+                ctx.fillStyle = "#ef4444";
+                ctx.fillRect(0, canvas.height - 10, prog, 10);
+                ctx.restore();
+            }
+
+            // 6. Hook Text
+            if (topText.value.trim() !== "") {
+                ctx.save();
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 38px 'Segoe UI', sans-serif";
+                ctx.textAlign = "center";
+                ctx.shadowColor = "rgba(0,0,0,0.9)";
+                ctx.shadowBlur = 10;
+                ctx.fillText(topText.value, canvas.width / 2, 85);
+                ctx.restore();
+            }
+
+            // ==========================================
+            // 🎯 DRAW CUSTOM WATERMARK (IMAGE OR TEXT)
+            // ==========================================
+            const size = parseFloat(wmSize.value);
+            const opacity = parseFloat(wmOpacity.value);
+
+            if (wmImage) {
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                const aspect = wmImage.height / wmImage.width;
+                const h = size * aspect;
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 8;
+                ctx.drawImage(wmImage, wmPos.x - size / 2, wmPos.y - h / 2, size, h);
+                ctx.restore();
+            } else if (wmText.value.trim() !== "") {
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                ctx.fillStyle = "#ffffff";
+                ctx.font = `bold ${Math.round(size / 3.2)}px 'Segoe UI', sans-serif`;
+                ctx.textAlign = "center";
+                ctx.shadowColor = "rgba(0,0,0,0.9)";
+                ctx.shadowBlur = 12;
+                ctx.fillText(wmText.value, wmPos.x, wmPos.y);
+                ctx.restore();
+            }
+
+            // Export Progress Monitor
+            if (isRecording && mainVideo.duration) {
+                const pct = Math.min(100, Math.round((mainVideo.currentTime / mainVideo.duration) * 100));
+                progressBar.style.width = pct + "%";
+                status.innerText = `⚡ Exporting: ${pct}%... Mukammal hotay hi download hogi!`;
+
+                if (mainVideo.currentTime >= mainVideo.duration - 0.2 || mainVideo.ended) {
+                    finishRecordingAndDownload();
+                }
+            }
+        }
+        requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+    // Play/Pause
+    btnPlay.addEventListener('click', () => {
+        if (mainVideo.paused) {
+            mainVideo.play();
+            if (bgVideo.src) bgVideo.play();
+            if (voiceAudio.src) voiceAudio.play();
+            btnPlay.innerText = "⏸ Pause";
+        } else {
+            mainVideo.pause();
+            if (bgVideo.src) bgVideo.pause();
+            if (voiceAudio.src) voiceAudio.pause();
+            btnPlay.innerText = "▶ Preview Play";
+        }
+    });
+
+    // Voice FX DSP
+    function applyVoiceFX(actx, sourceNode, destNode, fx) {
+        if (fx === 'deep') {
+            const bass = actx.createBiquadFilter();
+            bass.type = "lowshelf";
+            bass.frequency.value = 220;
+            bass.gain.value = 16;
+            const lp = actx.createBiquadFilter();
+            lp.type = "lowpass";
+            lp.frequency.value = 1500;
+            sourceNode.connect(bass);
+            bass.connect(lp);
+            lp.connect(destNode);
+        } else if (fx === 'radio') {
+            const bp = actx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = 1500;
+            bp.Q.value = 3.0;
+            sourceNode.connect(bp);
+            bp.connect(destNode);
+        } else if (fx === 'echo') {
+            const delay = actx.createDelay();
+            delay.delayTime.value = 0.25;
+            const fb = actx.createGain();
+            fb.gain.value = 0.4;
+            sourceNode.connect(destNode);
+            sourceNode.connect(delay);
+            delay.connect(fb);
+            fb.connect(delay);
+            delay.connect(destNode);
+        } else if (fx === 'robot') {
+            const osc = actx.createOscillator();
+            const g = actx.createGain();
+            osc.frequency.value = 60;
+            osc.type = 'sawtooth';
+            osc.start();
+            sourceNode.connect(g);
+            osc.connect(g.gain);
+            g.connect(destNode);
+        } else if (fx === 'high') {
+            const hs = actx.createBiquadFilter();
+            hs.type = "highshelf";
+            hs.frequency.value = 1800;
+            hs.gain.value = 15;
+            sourceNode.connect(hs);
+            hs.connect(destNode);
+        } else {
+            sourceNode.connect(destNode);
+        }
+    }
+
+    // ⚡ 1-Click Export & Auto-Download
+    btnExport.addEventListener('click', () => {
+        if (!mainVideo.src) {
+            alert("Pehle main video upload karein!");
+            return;
+        }
+        if (isRecording) return;
+
+        recordedChunks = [];
+        progressBox.style.display = "block";
+        progressBar.style.width = "0%";
+
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const dest = audioCtx.createMediaStreamDestination();
+
+        const currentFX = voiceEffect.value;
+
+        if (!muteOriginal.checked && mainVideo.src) {
+            try {
+                if (!mainVideoSource) mainVideoSource = audioCtx.createMediaElementSource(mainVideo);
+                applyVoiceFX(audioCtx, mainVideoSource, dest, currentFX);
+            } catch(e){}
+        }
+
+        if (voiceAudio.src) {
+            try {
+                if (!voiceAudioSource) voiceAudioSource = audioCtx.createMediaElementSource(voiceAudio);
+                applyVoiceFX(audioCtx, voiceAudioSource, dest, currentFX);
+            } catch(e){}
+        }
+
+        const canvasStream = canvas.captureStream(30);
+        if (dest.stream.getAudioTracks().length > 0) {
+            canvasStream.addTrack(dest.stream.getAudioTracks()[0]);
+        }
+
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+
+        mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Final_Short_${Date.now()}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+
+            status.innerText = "✅ Mubarak ho! Watermarked video download ho chuki hai.";
+            btnExport.innerText = "⚡ 1-Click Export & Auto-Download";
+            btnExport.style.background = "#10b981";
+            progressBox.style.display = "none";
+        };
+
+        mainVideo.currentTime = 0;
+        if (bgVideo.src) bgVideo.currentTime = 0;
+        if (voiceAudio.src) voiceAudio.currentTime = 0;
+
+        mainVideo.play();
+        if (bgVideo.src) bgVideo.play();
+        if (voiceAudio.src) voiceAudio.play();
+
+        mediaRecorder.start();
+        isRecording = true;
+        btnExport.innerText = "⏳ Processing Video with Watermark...";
+        btnExport.style.background = "#eab308";
+    });
+
+    function finishRecordingAndDownload() {
+        if (!isRecording) return;
+        isRecording = false;
+        
+        mainVideo.pause();
+        if (bgVideo.src) bgVideo.pause();
+        if (voiceAudio.src) voiceAudio.pause();
+
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+    }
+</script>
+
+</body>
+</html>
